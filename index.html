@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorful Animals Discovery & Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Updated Font to Century Gothic with fallbacks */
+        body {
+            font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .bg-animated {
+            background: linear-gradient(-45deg, #ff9a9e, #fecfef, #a1c4fd, #c2e9fb);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.2); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.5); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.8); 
+        }
+
+        /* Custom Radio Button Styles */
+        input[type="radio"]:checked + label {
+            background-color: #fce7f3; /* pink-100 */
+            border-color: #f472b6; /* pink-400 */
+            color: #be185d; /* pink-700 */
+        }
+    </style>
+</head>
+<body class="bg-animated text-gray-800 pb-16">
+
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 w-full z-30 bg-white/40 backdrop-blur-md border-b border-white/30 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                🐾 <span class="hidden sm:inline">Animal Safari</span>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="showHome()" class="px-5 py-2 rounded-full bg-white/70 hover:bg-white text-gray-800 font-bold shadow-sm transition-all hover:scale-105">
+                    🏠 Home
+                </button>
+                <button onclick="showQuiz()" class="px-5 py-2 rounded-full bg-pink-500 hover:bg-pink-600 text-white font-bold shadow-sm transition-all hover:scale-105">
+                    📝 Take Quiz
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <div class="pt-24">
+        
+        <!-- HOME VIEW (Grid & Filters) -->
+        <div id="home-view">
+            <!-- Header Section -->
+            <header class="pb-10 px-4 text-center">
+                <h1 class="text-5xl md:text-6xl font-black text-white drop-shadow-lg mb-4 tracking-wide">
+                    Discover Animals
+                </h1>
+                <p class="text-xl text-white font-semibold drop-shadow-md max-w-2xl mx-auto">
+                    Explore the colorful world of animals! Click on any animal to learn a fun fact.
+                </p>
+            </header>
+
+            <!-- Filters Section -->
+            <nav class="max-w-5xl mx-auto px-4 mb-10 flex flex-wrap justify-center gap-4" id="filter-container">
+                <!-- Buttons will be injected here by JS -->
+            </nav>
+
+            <!-- Animal Grid -->
+            <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" id="animal-grid">
+                <!-- Animal cards will be injected here by JS -->
+            </main>
+        </div>
+
+        <!-- QUIZ VIEW -->
+        <div id="quiz-view" class="hidden max-w-3xl mx-auto px-4">
+            <header class="pb-8 text-center">
+                <h1 class="text-4xl md:text-5xl font-black text-white drop-shadow-lg mb-2">
+                    Animal Knowledge Quiz
+                </h1>
+                <p class="text-lg text-white font-semibold drop-shadow-md">
+                    Test what you've learned from the animal facts!
+                </p>
+            </header>
+
+            <div class="bg-white/80 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border border-white/50 mb-10">
+                <div id="quiz-questions-container" class="space-y-8">
+                    <!-- Quiz questions injected here -->
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                    <button onclick="submitQuiz()" class="px-8 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-black text-xl rounded-full shadow-lg transform transition hover:scale-105">
+                        Submit Answers
+                    </button>
+                </div>
+
+                <div id="quiz-results" class="hidden mt-8 text-center bg-gray-50 rounded-2xl p-6 border-2 border-dashed border-gray-300">
+                    <h2 class="text-3xl font-black mb-2 text-gray-800" id="score-display">You scored X/5!</h2>
+                    <p class="text-gray-600 font-medium mb-4" id="score-message">Great job!</p>
+                    <button onclick="showHome()" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-full transition-colors">
+                        Return Home
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Background overlay (For Animal Facts) -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40 flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <!-- Modal Content -->
+        <div id="modal-content" class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform scale-95 transition-transform duration-300 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full p-2 w-10 h-10 flex items-center justify-center font-bold text-xl transition-colors">
+                &times;
+            </button>
+            <div id="modal-body" class="text-center mt-2">
+                <!-- Modal data injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Animal Data Array
+        const animals = [
+            {
+                name: "Lion", emoji: "🦁", category: "Mammal", color: "bg-orange-100", textColor: "text-orange-600", borderColor: "border-orange-300",
+                image: "https://placehold.co/400x300/ffedd5/ea580c?text=Lion",
+                fact: "A lion's roar can be heard from up to 5 miles away! They are the most social of all big cats and live in groups called prides."
+            },
+            {
+                name: "Macaw", emoji: "🦜", category: "Bird", color: "bg-red-100", textColor: "text-red-600", borderColor: "border-red-300",
+                image: "https://placehold.co/400x300/fee2e2/dc2626?text=Macaw",
+                fact: "Macaws are highly intelligent and social birds that often mate for life. They can mimic human speech and other sounds."
+            },
+            {
+                name: "Sea Turtle", emoji: "🐢", category: "Reptile", color: "bg-green-100", textColor: "text-green-600", borderColor: "border-green-300",
+                image: "https://placehold.co/400x300/dcfce7/16a34a?text=Sea+Turtle",
+                fact: "Sea turtles have been on Earth for over 100 million years, which means they shared the planet with dinosaurs!"
+            },
+            {
+                name: "Dolphin", emoji: "🐬", category: "Marine", color: "bg-cyan-100", textColor: "text-cyan-600", borderColor: "border-cyan-300",
+                image: "https://placehold.co/400x300/cffafe/0891b2?text=Dolphin",
+                fact: "Dolphins use a special technique called echolocation to find their food and navigate in the dark ocean waters."
+            },
+            {
+                name: "Elephant", emoji: "🐘", category: "Mammal", color: "bg-indigo-100", textColor: "text-indigo-600", borderColor: "border-indigo-300",
+                image: "https://placehold.co/400x300/e0e7ff/4f46e5?text=Elephant",
+                fact: "Elephants are the largest existing land animals. Their trunks have around 40,000 muscles and can pick up a single peanut!"
+            },
+            {
+                name: "Chameleon", emoji: "🦎", category: "Reptile", color: "bg-lime-100", textColor: "text-lime-600", borderColor: "border-lime-300",
+                image: "https://placehold.co/400x300/ecfccb/65a30d?text=Chameleon",
+                fact: "Chameleons don't just change color to blend in; they also change color to regulate their temperature and communicate with others."
+            },
+            {
+                name: "Penguin", emoji: "🐧", category: "Bird", color: "bg-blue-100", textColor: "text-blue-600", borderColor: "border-blue-300",
+                image: "https://placehold.co/400x300/dbeafe/2563eb?text=Penguin",
+                fact: "Penguins can't fly in the air, but they are expert swimmers! Their wings act like flippers to help them 'fly' underwater."
+            },
+            {
+                name: "Clownfish", emoji: "🐠", category: "Marine", color: "bg-yellow-100", textColor: "text-yellow-600", borderColor: "border-yellow-300",
+                image: "https://placehold.co/400x300/fef9c3/ca8a04?text=Clownfish",
+                fact: "Clownfish make their homes in sea anemones. They have a special mucus on their skin that protects them from the anemone's sting."
+            }
+        ];
+
+        // Quiz Data
+        const quizData = [
+            {
+                question: "How far away can a lion's roar be heard?",
+                options: ["1 mile", "3 miles", "5 miles", "10 miles"],
+                correctAnswer: 2 // Index of "5 miles"
+            },
+            {
+                question: "Which animal changes color to regulate its temperature?",
+                options: ["Macaw", "Chameleon", "Sea Turtle", "Penguin"],
+                correctAnswer: 1
+            },
+            {
+                question: "Approximately how many muscles are in an elephant's trunk?",
+                options: ["4,000", "14,000", "40,000", "400,000"],
+                correctAnswer: 2
+            },
+            {
+                question: "What special technique do dolphins use to navigate?",
+                options: ["Sonar", "Echolocation", "Magnetoreception", "Infrared vision"],
+                correctAnswer: 1
+            },
+            {
+                question: "Which marine animal makes its home inside sea anemones?",
+                options: ["Dolphin", "Sea Turtle", "Penguin", "Clownfish"],
+                correctAnswer: 3
+            }
+        ];
+
+        // View Management Variables
+        const homeView = document.getElementById('home-view');
+        const quizView = document.getElementById('quiz-view');
+        
+        const categories = ["All", ...new Set(animals.map(a => a.category))];
+        let currentFilter = "All";
+
+        // View Toggle Functions
+        function showHome() {
+            homeView.classList.remove('hidden');
+            quizView.classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showQuiz() {
+            homeView.classList.add('hidden');
+            quizView.classList.remove('hidden');
+            renderQuiz(); // Reset and render fresh quiz
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- HOME PAGE LOGIC ---
+
+        function renderFilters() {
+            const filterContainer = document.getElementById('filter-container');
+            filterContainer.innerHTML = '';
+            categories.forEach(category => {
+                const btn = document.createElement('button');
+                const isActive = category === currentFilter;
+                
+                btn.className = `px-6 py-2 rounded-full font-bold text-lg shadow-md transition-all duration-300 border-2 
+                    ${isActive 
+                        ? 'bg-white text-pink-500 border-pink-400 transform scale-110 shadow-lg' 
+                        : 'bg-white/40 text-gray-800 border-transparent hover:bg-white/80 hover:scale-105 backdrop-blur-md'
+                    }`;
+                
+                btn.textContent = category;
+                btn.onclick = () => {
+                    currentFilter = category;
+                    renderFilters(); 
+                    renderAnimals(); 
+                };
+                filterContainer.appendChild(btn);
+            });
+        }
+
+        function renderAnimals() {
+            const grid = document.getElementById('animal-grid');
+            grid.innerHTML = '';
+            
+            const filteredAnimals = currentFilter === "All" 
+                ? animals 
+                : animals.filter(a => a.category === currentFilter);
+
+            filteredAnimals.forEach((animal, index) => {
+                setTimeout(() => {
+                    const card = document.createElement('div');
+                    card.className = `card-hover bg-white rounded-3xl overflow-hidden shadow-lg cursor-pointer flex flex-col h-full border-4 ${animal.borderColor} opacity-0 translate-y-4`;
+                    card.style.transition = 'all 0.5s ease-out';
+                    
+                    card.innerHTML = `
+                        <div class="h-48 overflow-hidden relative">
+                            <img src="${animal.image}" alt="${animal.name}" class="w-full h-full object-cover">
+                            <div class="absolute top-3 right-3 bg-white/90 rounded-full px-3 py-1 text-sm font-bold shadow ${animal.textColor} backdrop-blur-sm">
+                                ${animal.category}
+                            </div>
+                        </div>
+                        <div class="p-6 flex-grow flex flex-col items-center text-center ${animal.color} bg-opacity-30">
+                            <div class="text-5xl mb-2">${animal.emoji}</div>
+                            <h2 class="text-2xl font-black mb-2 ${animal.textColor}">${animal.name}</h2>
+                            <p class="text-gray-600 font-medium text-sm mt-auto">Click to reveal a fun fact!</p>
+                        </div>
+                    `;
+                    card.onclick = () => openModal(animal);
+                    grid.appendChild(card);
+                    
+                    requestAnimationFrame(() => {
+                        card.classList.remove('opacity-0', 'translate-y-4');
+                    });
+                }, index * 50);
+            });
+        }
+
+        // --- MODAL LOGIC ---
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalContent = document.getElementById('modal-content');
+        
+        function openModal(animal) {
+            document.getElementById('modal-body').innerHTML = `
+                <div class="text-7xl mb-4 animate-bounce">${animal.emoji}</div>
+                <h2 class="text-4xl font-black mb-2 ${animal.textColor}">${animal.name}</h2>
+                <div class="inline-block px-4 py-1 rounded-full ${animal.color} ${animal.textColor} font-bold text-sm mb-6 border ${animal.borderColor}">
+                    ${animal.category}
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-6 shadow-inner text-left border border-gray-200">
+                    <h3 class="font-bold text-gray-400 uppercase tracking-wider text-xs mb-2">Fun Fact</h3>
+                    <p class="text-gray-700 text-lg leading-relaxed font-medium">
+                        ${animal.fact}
+                    </p>
+                </div>
+            `;
+            modalOverlay.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                modalOverlay.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            });
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modalOverlay.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modalOverlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }, 300);
+        }
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+
+        // --- QUIZ LOGIC ---
+        function renderQuiz() {
+            const container = document.getElementById('quiz-questions-container');
+            const resultsDiv = document.getElementById('quiz-results');
+            container.innerHTML = '';
+            resultsDiv.classList.add('hidden'); // Hide results if it was previously open
+
+            quizData.forEach((q, qIndex) => {
+                const questionBlock = document.createElement('div');
+                questionBlock.className = "bg-white p-5 rounded-2xl border border-gray-100 shadow-sm";
+                
+                let optionsHTML = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHTML += `
+                        <div class="relative mb-2">
+                            <input type="radio" id="q${qIndex}_opt${optIndex}" name="question${qIndex}" value="${optIndex}" class="hidden peer">
+                            <label for="q${qIndex}_opt${optIndex}" class="block w-full p-3 border-2 border-gray-200 rounded-xl cursor-pointer font-semibold text-gray-600 transition-colors hover:bg-gray-50">
+                                ${opt}
+                            </label>
+                        </div>
+                    `;
+                });
+
+                questionBlock.innerHTML = `
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <span class="text-pink-500 mr-2">${qIndex + 1}.</span>${q.question}
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        ${optionsHTML}
+                    </div>
+                `;
+                container.appendChild(questionBlock);
+            });
+        }
+
+        function submitQuiz() {
+            let score = 0;
+            let allAnswered = true;
+
+            quizData.forEach((q, qIndex) => {
+                const selected = document.querySelector(`input[name="question${qIndex}"]:checked`);
+                if (selected) {
+                    if (parseInt(selected.value) === q.correctAnswer) {
+                        score++;
+                    }
+                } else {
+                    allAnswered = false;
+                }
+            });
+
+            if (!allAnswered) {
+                alert("Please answer all questions before submitting!");
+                return;
+            }
+
+            // Display Results
+            const resultsDiv = document.getElementById('quiz-results');
+            const scoreDisplay = document.getElementById('score-display');
+            const scoreMessage = document.getElementById('score-message');
+
+            scoreDisplay.textContent = `You scored ${score} out of ${quizData.length}!`;
+            
+            if (score === 5) {
+                scoreMessage.textContent = "Perfect! You are an animal expert! 🥇";
+            } else if (score >= 3) {
+                scoreMessage.textContent = "Great job! You know a lot about animals! 🥈";
+            } else {
+                scoreMessage.textContent = "Good try! Read some more facts and try again! 📚";
+            }
+
+            resultsDiv.classList.remove('hidden');
+            
+            // Scroll to results
+            resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Initialize App
+        renderFilters();
+        renderAnimals();
+
+    </script>
+</body>
+</html>
